@@ -1,8 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
+using Checkout.Application.Commands.Transactions;
+using Checkout.Application.Common.Dto;
+using Checkout.Application.Queries.Transactions;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Checkout.Api.Controllers
@@ -11,36 +12,24 @@ namespace Checkout.Api.Controllers
     [ApiController]
     public class TransactionsController : ControllerBase
     {
-        // GET: api/Transactions
-        [HttpGet]
-        public IEnumerable<string> Get()
+        private readonly IMediator _mediator;
+        public TransactionsController(IMediator mediator)
         {
-            return new string[] { "value1", "value2" };
-        }
-
-        // GET: api/Transactions/5
-        [HttpGet("{id}", Name = "Get")]
-        public string Get(int id)
-        {
-            return "value";
+            _mediator = mediator;
         }
 
         // POST: api/Transactions
         [HttpPost]
-        public void Post([FromBody] string value)
+        public async Task<ActionResult<TransactionExecutionResponse>> ExecutePayment(ExecuteTransactionCommand command)
         {
+            return CreatedAtAction(nameof(ExecutePayment), await _mediator.Send(command));
         }
 
-        // PUT: api/Transactions/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        // POST: api/Transactions/{id}
+        [HttpGet("{id}", Name = "Get")]
+        public async Task<ActionResult<TransactionResponse>> GetTransactionById(Guid id)
         {
-        }
-
-        // DELETE: api/ApiWithActions/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
+            return await _mediator.Send(new GetTransactionByIdQuery { Id = id });
         }
     }
 }
