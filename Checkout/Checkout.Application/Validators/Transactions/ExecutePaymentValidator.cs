@@ -4,9 +4,9 @@ using FluentValidation;
 
 namespace Checkout.Application.Validators.Transactions
 {
-    public class ExecuteTransactionCommandValidator : AbstractValidator<ExecuteTransactionCommand>
+    public class ExecutePaymentValidator : AbstractValidator<ExecutePayment>
     {
-        public ExecuteTransactionCommandValidator()
+        public ExecutePaymentValidator()
         {
             RuleFor(v => v.Amount > 0);
             RuleFor(v => v.MerchantId)

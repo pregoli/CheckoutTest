@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Checkout.Application.Common.Dto;
 using Checkout.Application.Common.Interfaces;
 using MediatR;
+using Checkout.Application.Common.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace Checkout.Application.Queries.Transactions
@@ -16,13 +17,16 @@ namespace Checkout.Application.Queries.Transactions
 
     public class GetTransactionByIdQueryHandler : IRequestHandler<GetTransactionByIdQuery, TransactionResponse>
     {
+        private readonly ICardsService _cardsService;
         private readonly ITransactionsHistoryService _transactionsService;
         private readonly ILogger<GetTransactionByIdQueryHandler> _logger;
 
         public GetTransactionByIdQueryHandler(
+            ICardsService cardsService,
             ITransactionsHistoryService transactionsService,
             ILogger<GetTransactionByIdQueryHandler> logger)
         {
+            _cardsService = cardsService;
             _transactionsService = transactionsService;
             _logger = logger;
         }
@@ -37,7 +41,7 @@ namespace Checkout.Application.Queries.Transactions
                         TransactionId = result.TransactionId,
                         Amount = result.Amount,
                         CardHolderName = result.CardHolderName,
-                        CardNumber = result.CardNumber,
+                        CardNumber = _cardsService.Decrypt(result.CardNumber).Mask('X'),
                         Description = result.Description,
                         StatusCode = result.StatusCode,
                         Successful = result.Successful

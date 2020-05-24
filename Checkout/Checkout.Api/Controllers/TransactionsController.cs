@@ -20,7 +20,7 @@ namespace Checkout.Api.Controllers
 
         // POST: api/Transactions
         [HttpPost]
-        public async Task<ActionResult<TransactionExecutionResponse>> ExecutePayment(ExecuteTransactionCommand command)
+        public async Task<ActionResult<PaymentExecutionResponse>> ExecutePayment(ExecutePayment command)
         {
             return CreatedAtAction(nameof(ExecutePayment), await _mediator.Send(command));
         }

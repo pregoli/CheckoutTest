@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using Checkout.Application.Common.Dto;
 using Checkout.Application.Common.Interfaces;
 using Microsoft.Extensions.Logging;
-using System.Text.Json;
 using Checkout.Infrastructure.Persistence.Repositories;
 using System.Net;
 
@@ -25,7 +21,7 @@ namespace Checkout.Application.Services
             _logger = logger;
         }
 
-        public async Task<TransactionAuthResponse> ProcessAsync(TransactionAuthPayoad payload)
+        public async Task<TransactionAuthResponse> Authorize(TransactionAuthPayoad payload)
         {
             if(payload.Amount <= 0)
                 return new TransactionAuthResponse(

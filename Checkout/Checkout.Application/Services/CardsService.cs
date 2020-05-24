@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
 using Checkout.Application.Common.Dto;
 using Checkout.Application.Common.Interfaces;
@@ -15,7 +17,6 @@ namespace Checkout.Application.Services
             var monthCheck = new Regex(@"^(0[1-9]|1[0-2])$");
             var yearCheck = new Regex(@"^20[0-9]{2}$");
             var cvvCheck = new Regex(@"^\d{3}$");
-
 
             int sumOfDigits = CardDetails.CardNumber.Where((e) => e >= '0' && e <= '9')
                     .Reverse()
@@ -38,5 +39,34 @@ namespace Checkout.Application.Services
 
             return (cardExpiry > DateTime.Now && cardExpiry < DateTime.Now.AddYears(6));
         }
+
+        public string Encrypt(string cardNumber)  
+        {  
+            var inputArray = Encoding.UTF8.GetBytes(cardNumber);
+            var tripleDES = new TripleDESCryptoServiceProvider
+            {
+                Key = Encoding.UTF8.GetBytes("sblw-3hn8-sqoy19"),
+                Mode = CipherMode.ECB,
+                Padding = PaddingMode.PKCS7
+            };
+            var cryptoTransform = tripleDES.CreateEncryptor();  
+            var resultArray = cryptoTransform.TransformFinalBlock(inputArray, 0, inputArray.Length);  
+            tripleDES.Clear();  
+            return Convert.ToBase64String(resultArray, 0, resultArray.Length);  
+        }  
+        public string Decrypt(string cardNumber)
+        {  
+            var inputArray = Convert.FromBase64String(cardNumber);
+            var tripleDES = new TripleDESCryptoServiceProvider
+            {
+                Key = Encoding.UTF8.GetBytes("sblw-3hn8-sqoy19"),
+                Mode = CipherMode.ECB,
+                Padding = PaddingMode.PKCS7
+            };
+            var cryptoTransform = tripleDES.CreateDecryptor();  
+            var resultArray = cryptoTransform.TransformFinalBlock(inputArray, 0, inputArray.Length);  
+            tripleDES.Clear();   
+            return Encoding.UTF8.GetString(resultArray);  
+        }  
     }
 }

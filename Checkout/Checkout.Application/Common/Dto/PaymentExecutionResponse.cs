@@ -2,9 +2,9 @@
 
 namespace Checkout.Application.Common.Dto
 {
-    public class TransactionExecutionResponse
+    public class PaymentExecutionResponse
     {
-        public TransactionExecutionResponse(
+        public PaymentExecutionResponse(
             Guid transactionId,
             string statusCode,
             string description,
