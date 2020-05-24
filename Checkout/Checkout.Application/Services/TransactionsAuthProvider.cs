@@ -35,7 +35,7 @@ namespace Checkout.Application.Services
                     "Amount not accepted"
                 );
 
-            var transactionAuth = await _transactionsAuthRepository.Get(payload.Amount);
+            var transactionAuth = await _transactionsAuthRepository.Validate(payload.Amount);
             return transactionAuth == null ? 
                 new TransactionAuthResponse(
                     Guid.NewGuid(),
