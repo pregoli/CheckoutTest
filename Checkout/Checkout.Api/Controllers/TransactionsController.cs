@@ -29,7 +29,7 @@ namespace Checkout.Api.Controllers
         [HttpGet("{id}", Name = "Get")]
         public async Task<ActionResult<TransactionResponse>> GetTransactionById(Guid id)
         {
-            return await _mediator.Send(new GetTransactionByIdQuery { Id = id });
+            return await _mediator.Send(new GetTransactionByIdQuery { TransactionId = id });
         }
     }
 }

@@ -1,6 +1,7 @@
 using Checkout.Api.Filters;
 using Checkout.Application;
 using Checkout.Infrastructure;
+using Checkout.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -59,6 +60,21 @@ namespace Checkout.Api
             {
                 endpoints.MapControllers();
             });
+
+            MigrateDatabase(app);
+        }
+
+        private void MigrateDatabase(IApplicationBuilder builder)
+        {
+            using (var serviceScope = builder.ApplicationServices
+                .GetRequiredService<IServiceScopeFactory>()
+                .CreateScope())
+            {
+                using (var context = serviceScope.ServiceProvider.GetService<CheckoutDbContext>())
+                {
+                    context.Database.EnsureCreated();
+                }
+            }
         }
     }
 }

@@ -6,13 +6,19 @@ namespace Checkout.Application.Common.Dto
     {
         public TransactionExecutionResponse(
             Guid transactionId,
-            bool successfull)
+            string statusCode,
+            string description,
+            bool successful)
         {
             TransactionId = transactionId;
-            Successfull = successfull;
+            StatusCode = statusCode;
+            Description = description;
+            Successful = successful;
         }
 
         public Guid TransactionId { get; set; }
-        public bool Successfull { get; set; }
+        public string StatusCode { get; set; }
+        public string Description { get; set; }
+        public bool Successful { get; set; }
     }
 }
