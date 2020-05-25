@@ -12,7 +12,7 @@ namespace Checkout.Application.Services
     {
         public bool Validate(CardDetails CardDetails)
         {
-            if(CardDetails == null || string.IsNullOrEmpty(CardDetails.CardNumber)) return false;
+            if (CardDetails == null || string.IsNullOrEmpty(CardDetails.CardNumber)) return false;
 
             var monthCheck = new Regex(@"^(0[1-9]|1[0-2])$");
             var yearCheck = new Regex(@"^20[0-9]{2}$");
@@ -26,15 +26,15 @@ namespace Checkout.Application.Services
             var cardNumberisValid = sumOfDigits % 10 == 0;            
             if (!cardNumberisValid)
                 return false;
-            if (!cvvCheck.IsMatch(CardDetails.Cvv))
+            if (CardDetails.Cvv == null || !cvvCheck.IsMatch(CardDetails.Cvv))
                 return false;
 
-            if (!monthCheck.IsMatch(CardDetails.ExpirationMonth) || !yearCheck.IsMatch(CardDetails.ExpirationYear)) // <3 - 6>
+            if (!monthCheck.IsMatch(CardDetails.ExpirationMonth) || !yearCheck.IsMatch(CardDetails.ExpirationYear))
                 return false; 
 
             var year = int.Parse(CardDetails.ExpirationYear);
             var month = int.Parse(CardDetails.ExpirationMonth);            
-            var lastDateOfExpiryMonth = DateTime.DaysInMonth(year, month); //get actual expiry date
+            var lastDateOfExpiryMonth = DateTime.DaysInMonth(year, month);
             var cardExpiry = new DateTime(year, month, lastDateOfExpiryMonth, 23, 59, 59);
 
             return (cardExpiry > DateTime.Now && cardExpiry < DateTime.Now.AddYears(6));
@@ -42,6 +42,7 @@ namespace Checkout.Application.Services
 
         public string Encrypt(string cardNumber)  
         {  
+            if (string.IsNullOrEmpty(cardNumber)) return string.Empty;
             var inputArray = Encoding.UTF8.GetBytes(cardNumber);
             var tripleDES = new TripleDESCryptoServiceProvider
             {
@@ -56,6 +57,7 @@ namespace Checkout.Application.Services
         }  
         public string Decrypt(string cardNumber)
         {  
+            if (string.IsNullOrEmpty(cardNumber)) return string.Empty;
             var inputArray = Convert.FromBase64String(cardNumber);
             var tripleDES = new TripleDESCryptoServiceProvider
             {

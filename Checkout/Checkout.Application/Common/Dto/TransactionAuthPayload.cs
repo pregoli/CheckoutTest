@@ -4,9 +4,9 @@ using System.Text;
 
 namespace Checkout.Application.Common.Dto
 {
-    public class TransactionAuthPayoad
+    public class TransactionAuthPayload
     {
-        public TransactionAuthPayoad(
+        public TransactionAuthPayload(
             CardDetails cardDetails,
             decimal amount)
         {

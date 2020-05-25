@@ -8,7 +8,7 @@ namespace Checkout.Infrastructure.Persistence.Repositories
 {
     public interface ITransactionsAuthRepository : IRepository<TransactionAuth>
     {
-        Task<TransactionAuth> Validate(decimal amount);
+        Task<TransactionAuth> ValidateAsync(decimal amount);
     }
 
     public class TransactionsAuthRepository : Repository<TransactionAuth>, ITransactionsAuthRepository
@@ -18,7 +18,7 @@ namespace Checkout.Infrastructure.Persistence.Repositories
         {
         }
 
-        public async Task<TransactionAuth> Validate(decimal amount)
+        public async Task<TransactionAuth> ValidateAsync(decimal amount)
         {
             return await Query(x => amount.ToString().EndsWith(x.AmountEndWith)).FirstOrDefaultAsync();
         }

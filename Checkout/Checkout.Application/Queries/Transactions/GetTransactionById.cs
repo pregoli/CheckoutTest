@@ -10,32 +10,32 @@ using Microsoft.Extensions.Logging;
 
 namespace Checkout.Application.Queries.Transactions
 {
-    public class GetTransactionByIdQuery : IRequest<TransactionResponse>
+    public class GetTransactionById : IRequest<TransactionResponse>
     {
-        public Guid TransactionId { get; set; }
+        public Guid Id { get; set; }
     }
 
-    public class GetTransactionByIdQueryHandler : IRequestHandler<GetTransactionByIdQuery, TransactionResponse>
+    public class GetTransactionByIdQueryHandler : IRequestHandler<GetTransactionById, TransactionResponse>
     {
         private readonly ICardsService _cardsService;
-        private readonly ITransactionsHistoryService _transactionsService;
+        private readonly ITransactionsHistoryService _transactionsHistoryService;
         private readonly ILogger<GetTransactionByIdQueryHandler> _logger;
 
         public GetTransactionByIdQueryHandler(
             ICardsService cardsService,
-            ITransactionsHistoryService transactionsService,
+            ITransactionsHistoryService transactionsHistoryService,
             ILogger<GetTransactionByIdQueryHandler> logger)
         {
             _cardsService = cardsService;
-            _transactionsService = transactionsService;
+            _transactionsHistoryService = transactionsHistoryService;
             _logger = logger;
         }
 
-        public async Task<TransactionResponse> Handle(GetTransactionByIdQuery request, CancellationToken cancellationToken)
+        public async Task<TransactionResponse> Handle(GetTransactionById request, CancellationToken cancellationToken)
         {
             try
             {
-                var result = await _transactionsService.GetByTransactionIdAsync(request.TransactionId);
+                var result = await _transactionsHistoryService.GetByTransactionIdAsync(request.Id);
                 return result != null ? 
                     new TransactionResponse
                     { 
@@ -48,7 +48,7 @@ namespace Checkout.Application.Queries.Transactions
                     } : 
                     new TransactionResponse
                     { 
-                        TransactionId = request.TransactionId,
+                        TransactionId = request.Id,
                         Amount = 0,
                         CardHolderName = string.Empty,
                         CardNumber = string.Empty,
@@ -60,14 +60,14 @@ namespace Checkout.Application.Queries.Transactions
             {
                 _logger.LogError(
                     ex, 
-                    "Checkout Request: Unhandled Exception for Request {Name} {@Request}", 
-                    nameof(GetTransactionByIdQuery), 
+                    "Checkout Request: Unhandled Exception for Request {Name} {@Request}",
+                    nameof(GetTransactionById), 
                     request);
             }
 
             return new TransactionResponse
                 { 
-                    TransactionId = request.TransactionId,
+                    TransactionId = request.Id,
                     Amount = 0,
                     CardHolderName = string.Empty,
                     CardNumber = string.Empty,

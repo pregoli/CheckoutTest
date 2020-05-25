@@ -18,18 +18,18 @@ namespace Checkout.Application.Commands.Transactions
         public decimal Amount { get; set; }
     }
 
-    public class ExecutePaymentCommandHandler : IRequestHandler<ExecutePayment, PaymentExecutionResponse>
+    public class ExecutePaymentHandler : IRequestHandler<ExecutePayment, PaymentExecutionResponse>
     {
         private readonly ICardsService _cardsService;
         private readonly ITransactionsAuthProvider _transactionsAuthProvider;
         private readonly IMediator _mediator;
-        private readonly ILogger<ExecutePaymentCommandHandler> _logger;
+        private readonly ILogger<ExecutePaymentHandler> _logger;
 
-        public ExecutePaymentCommandHandler(
+        public ExecutePaymentHandler(
             ICardsService cardsService,
             ITransactionsAuthProvider transactionsAuthProvider, 
             IMediator mediator,
-            ILogger<ExecutePaymentCommandHandler> logger)
+            ILogger<ExecutePaymentHandler> logger)
         {
             _cardsService = cardsService;
             _transactionsAuthProvider = transactionsAuthProvider;
@@ -61,7 +61,7 @@ namespace Checkout.Application.Commands.Transactions
                     return new PaymentExecutionResponse(transactionId, code, description, false);
                 }
                 
-                var transactionAuthResponse = await _transactionsAuthProvider.Verify(new TransactionAuthPayoad(
+                var transactionAuthResponse = await _transactionsAuthProvider.VerifyAsync(new TransactionAuthPayload(
                         cardDetails: command.CardDetails, 
                         amount: command.Amount));
 
@@ -89,9 +89,13 @@ namespace Checkout.Application.Commands.Transactions
                     "Unhandled Exception for Command {Name} {@Command}", 
                     nameof(ExecutePayment), 
                     command);
-            }
 
-            return null;
+                return new PaymentExecutionResponse(
+                        transactionId: Guid.Empty,
+                        statusCode: HttpStatusCode.ServiceUnavailable.ToString(),
+                        description: "Something went wrong",
+                        successful: false);
+            }
         }
     }
 }

@@ -21,7 +21,7 @@ namespace Checkout.Application.Services
             _logger = logger;
         }
 
-        public async Task<TransactionAuthResponse> Verify(TransactionAuthPayoad payload)
+        public async Task<TransactionAuthResponse> VerifyAsync(TransactionAuthPayload payload)
         {
             if(payload.Amount <= 0)
                 return new TransactionAuthResponse(
@@ -33,7 +33,7 @@ namespace Checkout.Application.Services
 
             try
             {
-                var transactionAuth = await _transactionsAuthRepository.Validate(payload.Amount);
+                var transactionAuth = await _transactionsAuthRepository.ValidateAsync(payload.Amount);
                 return transactionAuth == null ? 
                     new TransactionAuthResponse(
                         Guid.NewGuid(),
@@ -42,7 +42,7 @@ namespace Checkout.Application.Services
                         "Successful"
                     ) : 
                     new TransactionAuthResponse(
-                        Guid.NewGuid(),
+                        transactionAuth.TransactionId,
                         false,
                         transactionAuth.ResponseCode,
                         transactionAuth.Description

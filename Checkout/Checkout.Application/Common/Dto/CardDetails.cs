@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Checkout.Application.Common.Dto
+﻿namespace Checkout.Application.Common.Dto
 {
     public class CardDetails
     {
