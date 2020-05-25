@@ -35,16 +35,25 @@ namespace Checkout.Application.Queries.Transactions
         {
             try
             {
-                var result = await _transactionsService.GetAsync(request.TransactionId);
-                return new TransactionResponse
+                var result = await _transactionsService.GetByTransactionIdAsync(request.TransactionId);
+                return result != null ? 
+                    new TransactionResponse
                     { 
                         TransactionId = result.TransactionId,
                         Amount = result.Amount,
                         CardHolderName = result.CardHolderName,
                         CardNumber = _cardsService.Decrypt(result.CardNumber).Mask('X'),
                         Description = result.Description,
-                        StatusCode = result.StatusCode,
-                        Successful = result.Successful
+                        StatusCode = result.StatusCode
+                    } : 
+                    new TransactionResponse
+                    { 
+                        TransactionId = request.TransactionId,
+                        Amount = 0,
+                        CardHolderName = string.Empty,
+                        CardNumber = string.Empty,
+                        Description = "The requested transaction could not be found",
+                        StatusCode = HttpStatusCode.NotFound.ToString()
                     };
             }
             catch (Exception ex)
@@ -63,8 +72,7 @@ namespace Checkout.Application.Queries.Transactions
                     CardHolderName = string.Empty,
                     CardNumber = string.Empty,
                     Description = "Unfortunately It was not possible to process your request",
-                    StatusCode = HttpStatusCode.ServiceUnavailable.ToString(),
-                    Successful = false
+                    StatusCode = HttpStatusCode.ServiceUnavailable.ToString()
                 };
         }
     }

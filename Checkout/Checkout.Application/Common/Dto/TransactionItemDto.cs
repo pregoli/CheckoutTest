@@ -1,15 +1,16 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
+using System.Collections.Generic;
+using System.Text;
 
-namespace Checkout.Domain.Entities
+namespace Checkout.Application.Common.Dto
 {
-    public class TransactionHistory : IEntity
+    public class TransactionItemDto
     {
-        public TransactionHistory()
+        public TransactionItemDto()
         {
         }
 
-        public TransactionHistory(
+        public TransactionItemDto(
             Guid transactionId,
             Guid merchantId,
             decimal amount,
@@ -28,7 +29,6 @@ namespace Checkout.Domain.Entities
             Timestamp = DateTime.Now;
         }
 
-        [Key]
         public Guid TransactionId { get; set; }
         public Guid MerchantId { get; set; }
         public decimal Amount { get; set; }
@@ -36,7 +36,6 @@ namespace Checkout.Domain.Entities
         public string CardNumber { get; set; }
         public string StatusCode { get; set; }
         public string Description { get; set; }
-        public bool Successful => string.IsNullOrEmpty(Description);
         public DateTime Timestamp { get; private set; }
     }
 }

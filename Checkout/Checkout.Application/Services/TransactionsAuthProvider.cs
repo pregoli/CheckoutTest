@@ -21,7 +21,7 @@ namespace Checkout.Application.Services
             _logger = logger;
         }
 
-        public async Task<TransactionAuthResponse> Authorize(TransactionAuthPayoad payload)
+        public async Task<TransactionAuthResponse> Verify(TransactionAuthPayoad payload)
         {
             if(payload.Amount <= 0)
                 return new TransactionAuthResponse(
@@ -31,20 +31,38 @@ namespace Checkout.Application.Services
                     "Amount not accepted"
                 );
 
-            var transactionAuth = await _transactionsAuthRepository.Validate(payload.Amount);
-            return transactionAuth == null ? 
-                new TransactionAuthResponse(
-                    Guid.NewGuid(),
-                    true,
-                    "10000",
-                    "Successful"
-                ) : 
-                new TransactionAuthResponse(
-                    Guid.NewGuid(),
-                    false,
-                    transactionAuth.ResponseCode,
-                    transactionAuth.Description
-                );
+            try
+            {
+                var transactionAuth = await _transactionsAuthRepository.Validate(payload.Amount);
+                return transactionAuth == null ? 
+                    new TransactionAuthResponse(
+                        Guid.NewGuid(),
+                        true,
+                        "10000",
+                        "Successful"
+                    ) : 
+                    new TransactionAuthResponse(
+                        Guid.NewGuid(),
+                        false,
+                        transactionAuth.ResponseCode,
+                        transactionAuth.Description
+                    );
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(
+                    ex, 
+                    "Unhandled Exception for Command {Name} {@Command}", 
+                    nameof(TransactionsAuthProvider), 
+                    payload);
+            }
+
+            return new TransactionAuthResponse(
+                        Guid.NewGuid(),
+                        true,
+                        HttpStatusCode.ServiceUnavailable.ToString(),
+                        "The verification could not be performed"
+                    );
         }
     }
 }

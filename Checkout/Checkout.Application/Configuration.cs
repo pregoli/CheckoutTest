@@ -11,6 +11,7 @@ using System;
 using Polly;
 using System.Net.Http;
 using Polly.Extensions.Http;
+using Checkout.Application.Common.Mappings;
 
 namespace Checkout.Application
 {
@@ -18,6 +19,13 @@ namespace Checkout.Application
     {
         public static IServiceCollection AddApplication(this IServiceCollection services, IConfiguration configuration)
         {
+            var mappingConfig = new MapperConfiguration(mc =>
+            {
+                mc.AddProfile(new MappingProfile());
+            });
+
+            services.AddSingleton(mappingConfig.CreateMapper());
+
             services.AddAutoMapper(Assembly.GetExecutingAssembly());
 
             services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());

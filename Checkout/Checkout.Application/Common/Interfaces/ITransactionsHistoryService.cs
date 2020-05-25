@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Checkout.Application.Common.Dto;
 using Checkout.Domain.Entities;
 
 namespace Checkout.Application.Common.Interfaces
 {
     public interface ITransactionsHistoryService
     {
-        Task<TransactionHistory> AddAsync(TransactionHistory transaction);
-        Task<TransactionHistory> GetAsync(Guid id);
-        Task<List<TransactionHistory>> GetTransactionsByMerchantIdAsync(Guid merchantId);
+        Task<TransactionItemDto> AddAsync(TransactionItemDto transactionItem);
+        Task<TransactionItemDto> GetByTransactionIdAsync(Guid id);
+        Task<List<TransactionItemDto>> GetByMerchantIdAsync(Guid id);
     }
 }

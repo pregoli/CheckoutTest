@@ -9,7 +9,7 @@ namespace Checkout.Application.Common.Dto
         public string CardNumber { get; set; }
         public decimal Amount { get; set; }
         public string StatusCode { get; set; }
-        public bool Successful { get; set; }
         public string Description { get; set; }
+        public bool Successful => string.IsNullOrEmpty(Description);
     }
 }

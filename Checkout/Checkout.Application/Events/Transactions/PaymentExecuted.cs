@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Checkout.Application.Common.Dto;
 using Checkout.Application.Common.Interfaces;
-using Checkout.Domain.Entities;
 using MediatR;
 using Microsoft.Extensions.Logging;
 
@@ -61,15 +61,14 @@ namespace Checkout.Application.Events.Transactions
             try
             {
                 await _transactionsHistoryService.AddAsync(
-                    new TransactionHistory(
-                    @event.TransactionId,
-                    @event.MerchantId,
-                    @event.Amount,
-                    @event.CardHolderName,
-                    @event.EncrypetdCardNumber,
-                    @event.StatusCode,
-                    @event.Description,
-                    @event.Successful));
+                    new TransactionItemDto(
+                        @event.TransactionId,
+                        @event.MerchantId,
+                        @event.Amount,
+                        @event.CardHolderName,
+                        @event.EncrypetdCardNumber,
+                        @event.StatusCode,
+                        @event.Description));
             }
             catch (Exception ex)
             {

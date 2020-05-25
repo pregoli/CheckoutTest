@@ -31,10 +31,10 @@ namespace Checkout.Api.Filters
 
         private void HandleException(ExceptionContext context)
         {
-            Type type = context.Exception.GetType();
-            if (_exceptionHandlers.ContainsKey(type))
+            var exceptionType = context.Exception.GetType();
+            if (_exceptionHandlers.ContainsKey(exceptionType))
             {
-                _exceptionHandlers[type].Invoke(context);
+                _exceptionHandlers[exceptionType].Invoke(context);
                 return;
             }
 

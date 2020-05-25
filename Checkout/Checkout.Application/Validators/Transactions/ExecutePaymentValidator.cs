@@ -28,18 +28,22 @@ namespace Checkout.Application.Validators.Transactions
             RuleFor(v => v.Cvv)
                 .NotNull()
                 .NotEmpty()
+                .Must(x => int.TryParse(x, out _))
                 .Length(3);
             RuleFor(v => v.CardNumber)
+                .CreditCard()
                 .NotNull()
                 .NotEmpty()
                 .Length(16);
             RuleFor(v => v.ExpirationMonth)
                 .NotNull()
                 .NotEmpty()
+                .Must(x => int.TryParse(x, out _))
                 .Length(2);
             RuleFor(v => v.ExpirationYear)
                 .NotNull()
                 .NotEmpty()
+                .Must(x => int.TryParse(x, out _))
                 .Length(4);
         }
     }

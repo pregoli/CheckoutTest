@@ -6,18 +6,18 @@ namespace Checkout.Application.Common.Dto
     {
         public TransactionAuthResponse(
             Guid transactionId,
-            bool successful,
+            bool verified,
             string code,
             string description)
         {
             TransactionId = transactionId;
-            Successful = successful;
+            Verified = verified;
             Code = code;
             Description = description;
         }
 
         public Guid TransactionId { get; set; }
-        public bool Successful { get; set; }
+        public bool Verified { get; set; }
         public string Code { get; set; }
         public string Description { get; set; }
     }

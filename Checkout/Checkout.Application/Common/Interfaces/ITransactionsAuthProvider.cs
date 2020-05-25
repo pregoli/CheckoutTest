@@ -5,6 +5,6 @@ namespace Checkout.Application.Common.Interfaces
 {
     public interface ITransactionsAuthProvider
     {
-        Task<TransactionAuthResponse> Authorize(TransactionAuthPayoad payload);
+        Task<TransactionAuthResponse> Verify(TransactionAuthPayoad payload);
     }
 }

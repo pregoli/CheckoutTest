@@ -36,8 +36,7 @@ namespace Checkout.Infrastructure.Persistence
                 "Paolo Regoli",
                 "1234567890123412",
                 "10000",
-                string.Empty,
-                true));
+                string.Empty));
             
             builder.Entity<TransactionHistory>().HasData(new TransactionHistory (
                 Guid.Parse(transactionId2), 
@@ -46,8 +45,7 @@ namespace Checkout.Infrastructure.Persistence
                 "Paolo Kerry",
                 "223456789012342",
                 "10000",
-                string.Empty,
-                true));
+                string.Empty));
 
             builder.Entity<TransactionHistory>().HasData(new TransactionHistory (
                 Guid.Parse(transactionId3), 
@@ -56,8 +54,7 @@ namespace Checkout.Infrastructure.Persistence
                 "Paolo Murphy",
                 "3234567890123412",
                 "10000",
-                string.Empty,
-                true));
+                string.Empty));
 
             builder.Entity<TransactionHistory>().HasData(new TransactionHistory (
                 Guid.Parse(transactionId4), 
@@ -66,8 +63,7 @@ namespace Checkout.Infrastructure.Persistence
                 "Paolo Johnson",
                 "4234567890123412",
                 "10000",
-                string.Empty,
-                true));
+                string.Empty));
 
             builder.Entity<TransactionHistory>().HasData(new TransactionHistory (
                 Guid.Parse(transactionId5), 
@@ -76,8 +72,7 @@ namespace Checkout.Infrastructure.Persistence
                 "Paolo Elliot",
                 "5234567890123412",
                 "10000",
-                string.Empty,
-                true));
+                string.Empty));
 
             builder.Entity<TransactionAuth>().HasData(
                 new TransactionAuth(Guid.NewGuid(),"05", "20005", "Declined - Do not honour"),

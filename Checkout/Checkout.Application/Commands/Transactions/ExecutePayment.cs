@@ -41,7 +41,6 @@ namespace Checkout.Application.Commands.Transactions
         {
             try
             {
-                var encryptedCardNumber = _cardsService.Encrypt(command.CardDetails.CardNumber);
                 if (!_cardsService.Validate(command.CardDetails))
                 {
                     var transactionId = Guid.NewGuid();
@@ -49,40 +48,39 @@ namespace Checkout.Application.Commands.Transactions
                     var description = "Invalid card";
 
                     await _mediator.Publish(new PaymentExecuted(
-                        transactionId,
-                        command.MerchantId,
-                        command.Amount,
-                        command.CardDetails.CardHolderName,
-                        encryptedCardNumber,
-                        code,
-                        description,
-                        false
+                        transactionId: transactionId,
+                        merchantId: command.MerchantId,
+                        amount: command.Amount,
+                        cardHolderName: command.CardDetails.CardHolderName,
+                        encrypetdCardNumber: _cardsService.Encrypt(command.CardDetails?.CardNumber),
+                        statusCode: code,
+                        description: description,
+                        successful: false
                     ));
 
                     return new PaymentExecutionResponse(transactionId, code, description, false);
                 }
                 
-                var transactionAuthResponse = await _transactionsAuthProvider.Authorize(
-                    new TransactionAuthPayoad(
-                        command.CardDetails,
-                        command.Amount));
+                var transactionAuthResponse = await _transactionsAuthProvider.Verify(new TransactionAuthPayoad(
+                        cardDetails: command.CardDetails, 
+                        amount: command.Amount));
 
                 await _mediator.Publish(new PaymentExecuted(
-                    transactionAuthResponse.TransactionId,
-                    command.MerchantId,
-                    command.Amount,
-                    command.CardDetails.CardHolderName,
-                    encryptedCardNumber,
-                    transactionAuthResponse.Code,
-                    transactionAuthResponse.Description,
-                    transactionAuthResponse.Successful
+                    transactionId: transactionAuthResponse.TransactionId,
+                    merchantId: command.MerchantId,
+                    amount: command.Amount,
+                    cardHolderName: command.CardDetails.CardHolderName,
+                    encrypetdCardNumber: _cardsService.Encrypt(command.CardDetails.CardNumber),
+                    statusCode: transactionAuthResponse.Code,
+                    description: transactionAuthResponse.Description,
+                    successful: transactionAuthResponse.Verified
                     ));
 
                 return new PaymentExecutionResponse(
-                        transactionAuthResponse.TransactionId,
-                        transactionAuthResponse.Code,
-                        transactionAuthResponse.Description,
-                        transactionAuthResponse.Successful);
+                        transactionId: transactionAuthResponse.TransactionId,
+                        statusCode: transactionAuthResponse.Code,
+                        description: transactionAuthResponse.Description,
+                        successful: transactionAuthResponse.Verified);
             }
             catch (Exception ex)
             {

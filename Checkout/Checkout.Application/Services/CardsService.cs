@@ -12,7 +12,7 @@ namespace Checkout.Application.Services
     {
         public bool Validate(CardDetails CardDetails)
         {
-            if(CardDetails == null) return false;
+            if(CardDetails == null || string.IsNullOrEmpty(CardDetails.CardNumber)) return false;
 
             var monthCheck = new Regex(@"^(0[1-9]|1[0-2])$");
             var yearCheck = new Regex(@"^20[0-9]{2}$");
