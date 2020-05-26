@@ -20,7 +20,7 @@ namespace Checkout.Api.Controllers
             _mediator = mediator;
         }
 
-        // POST: api/Transactions
+        // POST: api/beta/Transactions
         [HttpPost("beta/[controller]")]
         public async Task<ActionResult> ExecutePayment(ExecutePayment command)
         {
@@ -28,14 +28,14 @@ namespace Checkout.Api.Controllers
             return RedirectToRoute(nameof(GetTransactionById), new { id = transactionId });
         }
 
-        // Get: api/Transactions/{id}
+        // Get: api/beta/Transactions/{id}
         [HttpGet("beta/[controller]/{id}", Name = nameof(GetTransactionById))]
         public async Task<ActionResult<TransactionResponseVm>> GetTransactionById(Guid id)
         {
             return await _mediator.Send(new GetTransactionById { Id = id });
         }
         
-        // Get: api/Merchants/{id}/Transactions
+        // Get: api/beta/Merchants/{id}/Transactions
         [HttpGet("beta/Merchants/{id}/[controller]", Name = nameof(GetTransactionByMerchantId))]
         public async Task<ActionResult<List<TransactionResponseVm>>> GetTransactionByMerchantId(Guid id)
         {

@@ -44,7 +44,7 @@ namespace Checkout.Application
                     client =>
                     {
                         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-                        client.BaseAddress = new Uri($"https://api.applicationinsights.io/v1/apps/{configuration["ApplicationInsights:ApplicationId"]}/events/$all?$top=10");
+                        client.BaseAddress = new Uri($"https://api.applicationinsights.io/v1/apps/{configuration["ApplicationInsights:ApplicationId"]}");
                         client.Timeout = TimeSpan.FromMinutes(180);
                         client.DefaultRequestHeaders.Add("x-api-key", configuration["ApplicationInsights:ApiKey"]);
                     })

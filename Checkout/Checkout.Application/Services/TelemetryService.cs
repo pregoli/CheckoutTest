@@ -18,11 +18,19 @@ namespace Checkout.Application.Services
             _logger = logger;
         }
 
+        public async Task<string> GetRequestsCount()
+        {
+            var response = await _httpClient.GetAsync($"{_httpClient.BaseAddress}/metrics/requests/count");
+            return response.IsSuccessStatusCode ? 
+                await response.Content.ReadAsStringAsync() : 
+                response.ReasonPhrase;
+        }
+        
         public async Task<string> GetTopTenEventsAsync()
         {
-            var response = _httpClient.GetAsync(_httpClient.BaseAddress).Result;
+            var response = await _httpClient.GetAsync($"{_httpClient.BaseAddress}/events/$all?$top=10");
             return response.IsSuccessStatusCode ? 
-                response.Content.ReadAsStringAsync().Result : 
+                await response.Content.ReadAsStringAsync() : 
                 response.ReasonPhrase;
         }
     }

@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Checkout.Api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api")]
     [ApiController]
     public class TelemetriesController : ControllerBase
     {
@@ -15,11 +15,18 @@ namespace Checkout.Api.Controllers
             _telemetryService = telemetryService;
         }
 
-        // GET: beta/events/all/top/10
-        [HttpGet("beta/events/all/top/10")]
-        public async Task<ActionResult<string>> Get()
+        // GET: api/beta/Telemetries/events/all/top/10
+        [HttpGet("beta/[controller]/events/all/top/10", Name = nameof(GetLastTenEvents))]
+        public async Task<ActionResult<string>> GetLastTenEvents()
         {
             return await _telemetryService.GetTopTenEventsAsync();
+        }
+
+        // GET: api/beta/Telemetries/requests/count
+        [HttpGet("beta/[controller]/requests/count", Name = nameof(GetRequestsCount))]
+        public async Task<ActionResult<string>> GetRequestsCount()
+        {
+            return await _telemetryService.GetRequestsCount();
         }
     }
 }

@@ -66,7 +66,7 @@ namespace Checkout.Application.Commands.Transactions
                         amount: command.Amount));
 
                 transactionId = transactionAuthResponse.TransactionId;
-                await _mediator.Publish(new PaymentExecuted(
+                _mediator.Publish(new PaymentExecuted(
                     transactionId: transactionAuthResponse.TransactionId,
                     merchantId: command.MerchantId,
                     amount: command.Amount,
