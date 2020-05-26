@@ -2,20 +2,20 @@
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Checkout.Application.Common.Dto;
 using Checkout.Application.Common.Interfaces;
 using MediatR;
 using Checkout.Application.Common.Extensions;
 using Microsoft.Extensions.Logging;
+using Checkout.Application.Common.ViewModels;
 
 namespace Checkout.Application.Queries.Transactions
 {
-    public class GetTransactionById : IRequest<TransactionResponse>
+    public class GetTransactionById : IRequest<TransactionResponseVm>
     {
         public Guid Id { get; set; }
     }
 
-    public class GetTransactionByIdQueryHandler : IRequestHandler<GetTransactionById, TransactionResponse>
+    public class GetTransactionByIdQueryHandler : IRequestHandler<GetTransactionById, TransactionResponseVm>
     {
         private readonly ICardsService _cardsService;
         private readonly ITransactionsHistoryService _transactionsHistoryService;
@@ -31,30 +31,30 @@ namespace Checkout.Application.Queries.Transactions
             _logger = logger;
         }
 
-        public async Task<TransactionResponse> Handle(GetTransactionById request, CancellationToken cancellationToken)
+        public async Task<TransactionResponseVm> Handle(GetTransactionById request, CancellationToken cancellationToken)
         {
             try
             {
                 var result = await _transactionsHistoryService.GetByTransactionIdAsync(request.Id);
                 return result != null ? 
-                    new TransactionResponse
-                    { 
-                        TransactionId = result.TransactionId,
-                        Amount = result.Amount,
-                        CardHolderName = result.CardHolderName,
-                        CardNumber = _cardsService.Decrypt(result.CardNumber).Mask('X'),
-                        Description = result.Description,
-                        StatusCode = result.StatusCode
-                    } : 
-                    new TransactionResponse
-                    { 
-                        TransactionId = request.Id,
-                        Amount = 0,
-                        CardHolderName = string.Empty,
-                        CardNumber = string.Empty,
-                        Description = "The requested transaction could not be found",
-                        StatusCode = HttpStatusCode.NotFound.ToString()
-                    };
+                    new TransactionResponseVm (
+                        transactionId: result.Id,
+                        merchantId: result.MerchantId,
+                        cardHolderName: result.CardHolderName,
+                        cardNumber: _cardsService.Decrypt(result.CardNumber).Mask('X'),
+                        amount: result.Amount,
+                        statusCode: result.StatusCode,
+                        description: result.Description,
+                        timestamp: result.Timestamp ) : 
+                    new TransactionResponseVm (
+                        transactionId: request.Id,
+                        merchantId: Guid.Empty,
+                        cardHolderName: string.Empty,
+                        cardNumber: string.Empty,
+                        amount: 0,
+                        statusCode: HttpStatusCode.NotFound.ToString(),
+                        description: "The requested transaction could not be found",
+                        timestamp: DateTime.MinValue);
             }
             catch (Exception ex)
             {
@@ -65,15 +65,15 @@ namespace Checkout.Application.Queries.Transactions
                     request);
             }
 
-            return new TransactionResponse
-                { 
-                    TransactionId = request.Id,
-                    Amount = 0,
-                    CardHolderName = string.Empty,
-                    CardNumber = string.Empty,
-                    Description = "Unfortunately It was not possible to process your request",
-                    StatusCode = HttpStatusCode.ServiceUnavailable.ToString()
-                };
+            return new TransactionResponseVm (
+                        transactionId: request.Id,
+                        merchantId: Guid.Empty,
+                        cardHolderName: string.Empty,
+                        cardNumber: string.Empty,
+                        amount: 0,
+                        statusCode: HttpStatusCode.ServiceUnavailable.ToString(),
+                        description: "Unfortunately It was not possible to process your request",
+                        timestamp: DateTime.MinValue);
         }
     }
 }

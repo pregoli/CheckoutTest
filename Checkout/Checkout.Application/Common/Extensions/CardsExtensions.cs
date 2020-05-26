@@ -7,9 +7,7 @@ namespace Checkout.Application.Common.Extensions
         public static string Mask(this string source, char maskCharacter)
         {
             if (12 > source.Length)
-            {
                 throw new ArgumentException("Mask length is greater than string length");
-            }
 
             string mask = new string(maskCharacter, 12);
             string unMaskStart = source.Substring(0, 0);

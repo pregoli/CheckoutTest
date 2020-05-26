@@ -12,6 +12,7 @@ using Polly;
 using System.Net.Http;
 using Polly.Extensions.Http;
 using Checkout.Application.Common.Mappings;
+using System.Net.Http.Headers;
 
 namespace Checkout.Application
 {
@@ -37,7 +38,18 @@ namespace Checkout.Application
             services.AddScoped<ICardsService, CardsService>();
             services.AddScoped<ITransactionsHistoryService, TransactionsHistoryService>();
 
-            services.AddScoped<ITransactionsAuthProvider, TransactionsAuthProvider>();
+            services.AddScoped<IBankAuthProvider, DevBankAuthProvider>();
+
+            services.AddHttpClient<ITelemetryService, TelemetryService>(
+                    client =>
+                    {
+                        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                        client.BaseAddress = new Uri($"https://api.applicationinsights.io/v1/apps/{configuration["ApplicationInsights:ApplicationId"]}/events/$all?$top=10");
+                        client.Timeout = TimeSpan.FromMinutes(180);
+                        client.DefaultRequestHeaders.Add("x-api-key", configuration["ApplicationInsights:ApiKey"]);
+                    })
+                .AddPolicyHandler(BaseRetryPolicy)
+                .AddPolicyHandler(Policy.TimeoutAsync<HttpResponseMessage>(300));
 
             return services;
         }

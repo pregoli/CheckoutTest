@@ -7,9 +7,6 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
-using System.Net;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,7 +19,7 @@ namespace Checkout.Tests.Application.Commands.Transactions
         private ExecutePaymentHandler _handler;
 
         private Mock<ICardsService> _cardsService;
-        private Mock<ITransactionsAuthProvider> _transactionsAuthProvider;
+        private Mock<IBankAuthProvider> _bankAuthProvider;
         private Mock<IMediator> _mediator;
         private Mock<LoggerMock<ExecutePaymentHandler>> _logger;
 
@@ -30,7 +27,7 @@ namespace Checkout.Tests.Application.Commands.Transactions
         public void Setup()
         {
             _cardsService = new Mock<ICardsService>();
-            _transactionsAuthProvider = new Mock<ITransactionsAuthProvider>();
+            _bankAuthProvider = new Mock<IBankAuthProvider>();
             _mediator = new Mock<IMediator>();
             _logger = new Mock<LoggerMock<ExecutePaymentHandler>>();
 
@@ -38,23 +35,22 @@ namespace Checkout.Tests.Application.Commands.Transactions
             {
                 Amount = 100,
                 CardDetails = new CardDetails(),
-                Currency = "EUR",
                 MerchantId = Guid.NewGuid()
             };
 
             _handler = new ExecutePaymentHandler(
                 _cardsService.Object,
-                _transactionsAuthProvider.Object,
+                _bankAuthProvider.Object,
                 _mediator.Object,
                 _logger.Object);
         }
 
         [Test]
-        public async Task For_A_Given_Exception_Thrown_By_AuthProvider_A_ServiceUnavailable_StatusCode_Is_Expected_From_Response()
+        public async Task Should_Return_A_TransactionId_When_An_Exception_Thrown_By_AuthProvider()
         {
             //Arange
             _cardsService.Setup(x => x.Validate(It.IsAny<CardDetails>())).Returns(true);
-            _transactionsAuthProvider.Setup(x => x.VerifyAsync(It.IsAny<TransactionAuthPayload>()))
+            _bankAuthProvider.Setup(x => x.VerifyAsync(It.IsAny<TransactionAuthRequest>()))
                 .Throws(new Exception());
 
             //Act
@@ -63,12 +59,11 @@ namespace Checkout.Tests.Application.Commands.Transactions
             //Assert
             _logger.Verify(x => x.Log(LogLevel.Error, It.IsAny<Exception>(), It.IsAny<string>()), Times.Once);
             Assert.NotNull(result);
-            Assert.False(result.Successful);
-            Assert.AreEqual(result.StatusCode, HttpStatusCode.ServiceUnavailable.ToString());
+            Assert.AreNotEqual(result, Guid.Empty);
         }
 
         [Test]
-        public async Task For_An_Invalid_Card_Data_A_NotAcceptable_StatusCode_Is_Expected_From_Response()
+        public async Task Should_Return_A_TransactionId_When_An_Invalid_Card_Data()
         {
             //Arange
             _cardsService.Setup(x => x.Validate(It.IsAny<CardDetails>())).Returns(false);
@@ -77,53 +72,32 @@ namespace Checkout.Tests.Application.Commands.Transactions
             var result = await _handler.Handle(_command, new CancellationToken());
 
             //Assert
-            _transactionsAuthProvider.Verify(x => x.VerifyAsync(It.IsAny<TransactionAuthPayload>()), Times.Never);
+            _bankAuthProvider.Verify(x => x.VerifyAsync(It.IsAny<TransactionAuthRequest>()), Times.Never);
             Assert.NotNull(result);
-            Assert.False(result.Successful);
-            Assert.AreEqual(result.StatusCode, HttpStatusCode.NotAcceptable.ToString());
+            Assert.AreNotEqual(result, Guid.Empty);
         }
 
-        [TestCase("20150", "Card not 3D Secure enabled")]
-        [TestCase("20153", "3D Secure system malfunction")]
-        [TestCase("20154", "3D Secure Authentication Required")]
-        public async Task For_A_Not_Verified_Transaction_From_The_Auth_Service_An_Unsuccessful_Response_Is_Expected(
-            string statusCode, string description)
+        [TestCase("20150", "Card not 3D Secure enabled", false)]
+        [TestCase("20153", "3D Secure system malfunction", false)]
+        [TestCase("20154", "3D Secure Authentication Required", false)]
+        [TestCase("Successful", "", true)]
+        public async Task Should_Return_A_TransactionId_When_The_Auth_Verify_The_Transaction(
+            string statusCode, string description, bool verified)
         {
             //Arange
             _cardsService.Setup(x => x.Validate(It.IsAny<CardDetails>())).Returns(true);
 
             var transactionId = Guid.NewGuid();
-            var transactionAuthResponse = new TransactionAuthResponse(transactionId, false, statusCode, description);
-            _transactionsAuthProvider.Setup(x => x.VerifyAsync(It.IsAny<TransactionAuthPayload>()))
+            var transactionAuthResponse = new TransactionAuthResponse(transactionId, verified, statusCode, description);
+            _bankAuthProvider.Setup(x => x.VerifyAsync(It.IsAny<TransactionAuthRequest>()))
                 .Returns(Task.FromResult(transactionAuthResponse));
             //Act
             var result = await _handler.Handle(_command, new CancellationToken());
 
             //Assert
-            _transactionsAuthProvider.Verify(x => x.VerifyAsync(It.IsAny<TransactionAuthPayload>()), Times.Exactly(1));
+            _bankAuthProvider.Verify(x => x.VerifyAsync(It.IsAny<TransactionAuthRequest>()), Times.Exactly(1));
             Assert.NotNull(result);
-            Assert.False(result.Successful);
-            Assert.AreEqual(result.StatusCode, statusCode);
-        }
-
-        [Test]
-        public async Task For_A_Verified_Transaction_From_The_Auth_Service_A_Successful_Response_Is_Expected()
-        {
-            //Arange
-            _cardsService.Setup(x => x.Validate(It.IsAny<CardDetails>())).Returns(true);
-
-            var transactionId = Guid.NewGuid();
-            var transactionAuthResponse = new TransactionAuthResponse(transactionId, true, "Successful", string.Empty);
-            _transactionsAuthProvider.Setup(x => x.VerifyAsync(It.IsAny<TransactionAuthPayload>()))
-                .Returns(Task.FromResult(transactionAuthResponse));
-            //Act
-            var result = await _handler.Handle(_command, new CancellationToken());
-
-            //Assert
-            _transactionsAuthProvider.Verify(x => x.VerifyAsync(It.IsAny<TransactionAuthPayload>()), Times.Exactly(1));
-            Assert.NotNull(result);
-            Assert.True(result.Successful);
-            Assert.AreEqual(result.StatusCode, "Successful");
+            Assert.AreNotEqual(result, Guid.Empty);
         }
     }
 }

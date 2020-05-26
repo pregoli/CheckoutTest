@@ -77,6 +77,8 @@ namespace Checkout.Application.Events.Transactions
                     "Unhandled Exception for Event {Name} {@Event}", 
                     nameof(PaymentExecuted), 
                     @event);
+
+                throw;
             }
         }
     }

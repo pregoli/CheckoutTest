@@ -1,43 +1,39 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
 
-namespace Checkout.Domain.Entities
+namespace Checkout.Application.Common.ViewModels
 {
-    public class TransactionHistory : IEntity
+    public class TransactionResponseVm
     {
-        public TransactionHistory()
-        {
-        }
-
-        public TransactionHistory(
-            Guid id,
+        public TransactionResponseVm(
+            Guid transactionId,
             Guid merchantId,
-            decimal amount,
             string cardHolderName,
             string cardNumber,
+            decimal amount,
             string statusCode,
-            string description)
+            string description,
+            DateTime timestamp)
         {
-            Id = id;
+            TransactionId = transactionId;
             MerchantId = merchantId;
-            Amount = amount;
             CardHolderName = cardHolderName;
             CardNumber = cardNumber;
+            Amount = amount;
             StatusCode = statusCode;
             Description = description;
-            Timestamp = DateTime.Now;
+            Timestamp = timestamp;
+            Currency = "GBP";
         }
 
-        [Key]
-        public Guid Id { get; set; }
+        public Guid TransactionId { get; set; }
         public Guid MerchantId { get; set; }
-        public string Currency => "GBP";
-        public decimal Amount { get; set; }
         public string CardHolderName { get; set; }
         public string CardNumber { get; set; }
+        public decimal Amount { get; set; }
         public string StatusCode { get; set; }
         public string Description { get; set; }
+        public DateTime Timestamp { get; set; }
+        public string Currency { get; private set; }
         public bool Successful => string.IsNullOrEmpty(Description);
-        public DateTime Timestamp { get; private set; }
     }
 }

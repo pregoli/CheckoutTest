@@ -8,7 +8,6 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -39,7 +38,7 @@ namespace Checkout.Tests.Application.Queries.Transactions
         }
 
         [Test]
-        public async Task For_A_Given_Exception_Thrown_By_Service_An_Empty_Response_Is_Expected()
+        public async Task Should_Contain_Empty_Response_When_An_Exception_Throws_By_Service_By_The_Service()
         {
             //Arange
             _transactionsHistoryService.Setup(x => x.GetByMerchantIdAsync(It.IsAny<Guid>()))
@@ -55,7 +54,7 @@ namespace Checkout.Tests.Application.Queries.Transactions
         }
 
         [Test]
-        public async Task For_A_Not_Existing_Transactions_By_The_Given_MerchantId_An_Empty_Response_Is_Expected()
+        public async Task Should_Contain_Empty_Response_When_Any_Transaction_Could_Be_Found_By_The_Given_MerchantId()
         {
             //Arange
             List<TransactionItemDto> response = null;
@@ -70,9 +69,9 @@ namespace Checkout.Tests.Application.Queries.Transactions
             Assert.NotNull(result);
             Assert.IsEmpty(result);
         }
-
+        
         [Test]
-        public async Task For_Existing_Transactions_By_The_Given_MerchantId_A_Not_Empty_Response_Is_Expected()
+        public async Task Should_Contain_A_Not_Empty_When_At_Least_One_Transaction_Could_Be_Found_By_The_Given_MerchantId()
         {
             //Arange
             var transactionId = Guid.NewGuid();

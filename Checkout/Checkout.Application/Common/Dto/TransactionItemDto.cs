@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Checkout.Application.Common.Dto
 {
@@ -11,7 +9,7 @@ namespace Checkout.Application.Common.Dto
         }
 
         public TransactionItemDto(
-            Guid transactionId,
+            Guid id,
             Guid merchantId,
             decimal amount,
             string cardHolderName,
@@ -19,7 +17,7 @@ namespace Checkout.Application.Common.Dto
             string statusCode,
             string description)
         {
-            TransactionId = transactionId;
+            Id = id;
             MerchantId = merchantId;
             Amount = amount;
             CardHolderName = cardHolderName;
@@ -29,8 +27,9 @@ namespace Checkout.Application.Common.Dto
             Timestamp = DateTime.Now;
         }
 
-        public Guid TransactionId { get; set; }
+        public Guid Id { get; set; }
         public Guid MerchantId { get; set; }
+        public string Currency => "GBP";
         public decimal Amount { get; set; }
         public string CardHolderName { get; set; }
         public string CardNumber { get; set; }

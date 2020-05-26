@@ -34,7 +34,7 @@ namespace Checkout.Api
 
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Checkout Gateway API", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Checkout Gateway API", Version = "BETA" });
             });
         }
 
@@ -49,12 +49,10 @@ namespace Checkout.Api
                 .UseSwagger()
                 .UseSwaggerUI(c =>
                 {
-                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Checkout Gateway API V1");
+                    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Checkout Gateway API BETA");
                 });
 
             app.UseRouting();
-
-            //app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
             {

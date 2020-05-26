@@ -2,15 +2,14 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Checkout.Application.Commands.Transactions;
-using Checkout.Application.Common.Dto;
+using Checkout.Application.Common.ViewModels;
 using Checkout.Application.Queries.Transactions;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace Checkout.Api.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api")]
     [ApiController]
     public class TransactionsController : ControllerBase
     {
@@ -22,22 +21,23 @@ namespace Checkout.Api.Controllers
         }
 
         // POST: api/Transactions
-        [HttpPost]
-        public async Task<ActionResult<PaymentExecutionResponse>> ExecutePayment(ExecutePayment command)
+        [HttpPost("beta/[controller]")]
+        public async Task<ActionResult> ExecutePayment(ExecutePayment command)
         {
-            return CreatedAtAction(nameof(ExecutePayment), await _mediator.Send(command));
+            var transactionId = await _mediator.Send(command);
+            return RedirectToRoute(nameof(GetTransactionById), new { id = transactionId });
         }
 
-        // POST: api/Transactions/{id}
-        [HttpGet("{id}", Name = "GetTransactionById")]
-        public async Task<ActionResult<TransactionResponse>> GetTransactionById(Guid id)
+        // Get: api/Transactions/{id}
+        [HttpGet("beta/[controller]/{id}", Name = nameof(GetTransactionById))]
+        public async Task<ActionResult<TransactionResponseVm>> GetTransactionById(Guid id)
         {
             return await _mediator.Send(new GetTransactionById { Id = id });
         }
         
-        // POST: api/merchants/{id}/Transactions
-        [HttpGet("Merchants/{id}/Transactions", Name = "GetTransactionsByMerchantId")]
-        public async Task<ActionResult<List<TransactionResponse>>> GetTransactionByMerchantId(Guid id)
+        // Get: api/Merchants/{id}/Transactions
+        [HttpGet("beta/Merchants/{id}/[controller]", Name = nameof(GetTransactionByMerchantId))]
+        public async Task<ActionResult<List<TransactionResponseVm>>> GetTransactionByMerchantId(Guid id)
         {
             return await _mediator.Send(new GetTransactionByMerchantId { MerchantId = id });
         }

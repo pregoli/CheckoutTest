@@ -6,9 +6,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
 using System.Net;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -39,7 +37,7 @@ namespace Checkout.Tests.Application.Queries.Transactions
         }
 
         [Test]
-        public async Task For_A_Given_Exception_Thrown_By_Service_A_ServiceUnavailable_StatusCode_Is_Expected_From_Response()
+        public async Task Should_Contain_ServiceUnavailable_StatusCode_When_An_Exception_Throws_By_The_Service()
         {
             //Arange
             _transactionsHistoryService.Setup(x => x.GetByTransactionIdAsync(It.IsAny<Guid>()))
@@ -55,7 +53,7 @@ namespace Checkout.Tests.Application.Queries.Transactions
         }
 
         [Test]
-        public async Task For_A_Not_Existing_Transaction_A_NotFound_StatusCode_Is_Expected_From_Response()
+        public async Task Should_Contain_NotFound_StatusCode_When_A_Transaction_Could_Not_Be_Found_By_The_Service()
         {
             //Arange
             TransactionItemDto response = null;
@@ -72,7 +70,7 @@ namespace Checkout.Tests.Application.Queries.Transactions
         }
 
         [Test]
-        public async Task For_An_Existing_Transaction_A_Successful_StatusCode_Is_Expected_From_Response()
+        public async Task Should_Contain_Successful_StatusCode_When_A_Successfully_Transaction_Could_Be_Found_By_The_Service()
         {
             //Arange
             var transactionId = Guid.NewGuid();

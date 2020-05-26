@@ -10,41 +10,41 @@ using Microsoft.Extensions.Logging;
 
 namespace Checkout.Application.Commands.Transactions
 {
-    public class ExecutePayment : IRequest<PaymentExecutionResponse>
+    public class ExecutePayment : IRequest<Guid>
     {
         public Guid MerchantId { get; set; }
         public CardDetails CardDetails { get; set; }
-        public string Currency { get; set; }
         public decimal Amount { get; set; }
     }
 
-    public class ExecutePaymentHandler : IRequestHandler<ExecutePayment, PaymentExecutionResponse>
+    public class ExecutePaymentHandler : IRequestHandler<ExecutePayment, Guid>
     {
         private readonly ICardsService _cardsService;
-        private readonly ITransactionsAuthProvider _transactionsAuthProvider;
+        private readonly IBankAuthProvider _bankAuthProvider;
         private readonly IMediator _mediator;
         private readonly ILogger<ExecutePaymentHandler> _logger;
 
         public ExecutePaymentHandler(
             ICardsService cardsService,
-            ITransactionsAuthProvider transactionsAuthProvider, 
+            IBankAuthProvider bankAuthProvider, 
             IMediator mediator,
             ILogger<ExecutePaymentHandler> logger)
         {
             _cardsService = cardsService;
-            _transactionsAuthProvider = transactionsAuthProvider;
+            _bankAuthProvider = bankAuthProvider;
             _mediator = mediator;
             _logger = logger;
         }
 
-        public async Task<PaymentExecutionResponse> Handle(ExecutePayment command, CancellationToken cancellationToken)
+        public async Task<Guid> Handle(ExecutePayment command, CancellationToken cancellationToken)
         {
+            var transactionId = Guid.NewGuid();
+
             try
             {
                 if (!_cardsService.Validate(command.CardDetails))
                 {
-                    var transactionId = Guid.NewGuid();
-                    var code = HttpStatusCode.NotAcceptable.ToString();
+                    var statusCode = HttpStatusCode.NotAcceptable.ToString();
                     var description = "Invalid card";
 
                     await _mediator.Publish(new PaymentExecuted(
@@ -53,18 +53,19 @@ namespace Checkout.Application.Commands.Transactions
                         amount: command.Amount,
                         cardHolderName: command.CardDetails.CardHolderName,
                         encrypetdCardNumber: _cardsService.Encrypt(command.CardDetails?.CardNumber),
-                        statusCode: code,
+                        statusCode: statusCode,
                         description: description,
                         successful: false
                     ));
 
-                    return new PaymentExecutionResponse(transactionId, code, description, false);
+                    return transactionId;
                 }
                 
-                var transactionAuthResponse = await _transactionsAuthProvider.VerifyAsync(new TransactionAuthPayload(
+                var transactionAuthResponse = await _bankAuthProvider.VerifyAsync(new TransactionAuthRequest(
                         cardDetails: command.CardDetails, 
                         amount: command.Amount));
 
+                transactionId = transactionAuthResponse.TransactionId;
                 await _mediator.Publish(new PaymentExecuted(
                     transactionId: transactionAuthResponse.TransactionId,
                     merchantId: command.MerchantId,
@@ -75,12 +76,6 @@ namespace Checkout.Application.Commands.Transactions
                     description: transactionAuthResponse.Description,
                     successful: transactionAuthResponse.Verified
                     ));
-
-                return new PaymentExecutionResponse(
-                        transactionId: transactionAuthResponse.TransactionId,
-                        statusCode: transactionAuthResponse.Code,
-                        description: transactionAuthResponse.Description,
-                        successful: transactionAuthResponse.Verified);
             }
             catch (Exception ex)
             {
@@ -90,12 +85,21 @@ namespace Checkout.Application.Commands.Transactions
                     nameof(ExecutePayment), 
                     command);
 
-                return new PaymentExecutionResponse(
-                        transactionId: Guid.Empty,
-                        statusCode: HttpStatusCode.ServiceUnavailable.ToString(),
-                        description: "Something went wrong",
-                        successful: false);
+                var statusCode = HttpStatusCode.ServiceUnavailable.ToString();
+                var description = "Something went wrong. Please try again later.";
+                await _mediator.Publish(new PaymentExecuted(
+                        transactionId: transactionId,
+                        merchantId: command.MerchantId,
+                        amount: command.Amount,
+                        cardHolderName: command.CardDetails.CardHolderName,
+                        encrypetdCardNumber: _cardsService.Encrypt(command.CardDetails?.CardNumber),
+                        statusCode: statusCode,
+                        description: description,
+                        successful: false
+                    ));
             }
+
+            return transactionId;
         }
     }
 }

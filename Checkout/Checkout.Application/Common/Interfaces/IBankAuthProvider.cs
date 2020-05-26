@@ -3,8 +3,8 @@ using Checkout.Application.Common.Dto;
 
 namespace Checkout.Application.Common.Interfaces
 {
-    public interface ITransactionsAuthProvider
+    public interface IBankAuthProvider
     {
-        Task<TransactionAuthResponse> VerifyAsync(TransactionAuthPayload payload);
+        Task<TransactionAuthResponse> VerifyAsync(TransactionAuthRequest payload);
     }
 }

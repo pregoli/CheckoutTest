@@ -1,24 +1,22 @@
-﻿using Checkout.Application.Common.Dto;
-using Checkout.Application.Common.Extensions;
+﻿using Checkout.Application.Common.Extensions;
 using Checkout.Application.Common.Interfaces;
+using Checkout.Application.Common.ViewModels;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Checkout.Application.Queries.Transactions
 {
-    public class GetTransactionByMerchantId : IRequest<List<TransactionResponse>>
+    public class GetTransactionByMerchantId : IRequest<List<TransactionResponseVm>>
     {
         public Guid MerchantId { get; set; }
     }
 
-    public class GetTransactionByMerchantIdQueryHandler : IRequestHandler<GetTransactionByMerchantId, List<TransactionResponse>>
+    public class GetTransactionByMerchantIdQueryHandler : IRequestHandler<GetTransactionByMerchantId, List<TransactionResponseVm>>
     {
         private readonly ICardsService _cardsService;
         private readonly ITransactionsHistoryService _transactionsService;
@@ -34,23 +32,22 @@ namespace Checkout.Application.Queries.Transactions
             _logger = logger;
         }
 
-        public async Task<List<TransactionResponse>> Handle(GetTransactionByMerchantId request, CancellationToken cancellationToken)
+        public async Task<List<TransactionResponseVm>> Handle(GetTransactionByMerchantId request, CancellationToken cancellationToken)
         {
-            var response = new List<TransactionResponse>();
-            
+            var response = new List<TransactionResponseVm>();
             try
             {
                 var transactionItems = await _transactionsService.GetByMerchantIdAsync(request.MerchantId);
-                transactionItems?.ForEach(transactionItem => response.Add(
-                    new TransactionResponse
-                    { 
-                        TransactionId = transactionItem.TransactionId,
-                        Amount = transactionItem.Amount,
-                        CardHolderName = transactionItem.CardHolderName,
-                        CardNumber = _cardsService.Decrypt(transactionItem.CardNumber).Mask('X'),
-                        Description = transactionItem.Description,
-                        StatusCode = transactionItem.StatusCode
-                    }));
+                return transactionItems?.Select(transactionItem =>
+                    new TransactionResponseVm (
+                        transactionId: transactionItem.Id,
+                        merchantId: transactionItem.MerchantId,
+                        cardHolderName: transactionItem.CardHolderName,
+                        cardNumber: _cardsService.Decrypt(transactionItem.CardNumber).Mask('X'),
+                        amount: transactionItem.Amount,
+                        statusCode: transactionItem.StatusCode,
+                        description: transactionItem.Description,
+                        timestamp: transactionItem.Timestamp)).ToList() ?? response;
             }
             catch (Exception ex)
             {

@@ -1,5 +1,4 @@
 ﻿using Checkout.Application.Common.Dto;
-using Checkout.Application.Common.Interfaces;
 using Checkout.Application.Services;
 using Checkout.Domain.Entities;
 using Checkout.Infrastructure.Persistence.Repositories;
@@ -8,9 +7,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
 using System.Net;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Checkout.Tests.Application.Services
@@ -18,21 +15,21 @@ namespace Checkout.Tests.Application.Services
     [TestFixture]
     public class TransactionsAuthProviderTests
     {
-        private TransactionAuthPayload _transactionAuthPayload;
-        private TransactionsAuthProvider _transactionsAuthProvider;
+        private TransactionAuthRequest _transactionAuthRequest;
+        private DevBankAuthProvider _devBankAuthProvider;
 
-        private Mock<ITransactionsAuthRepository> _transactionsAuthRepository;
-        private Mock<LoggerMock<TransactionsAuthProvider>> _logger;
+        private Mock<IDevBankAuthRepository> _bankAuthProvider;
+        private Mock<LoggerMock<DevBankAuthProvider>> _logger;
 
         [SetUp]
         public void Setup()
         {
-            _transactionsAuthRepository = new Mock<ITransactionsAuthRepository>();
-            _logger = new Mock<LoggerMock<TransactionsAuthProvider>>();
+            _bankAuthProvider = new Mock<IDevBankAuthRepository>();
+            _logger = new Mock<LoggerMock<DevBankAuthProvider>>();
 
-            _transactionAuthPayload = new TransactionAuthPayload(new CardDetails(), 100);
-            _transactionsAuthProvider = new TransactionsAuthProvider(
-                _transactionsAuthRepository.Object,
+            _transactionAuthRequest = new TransactionAuthRequest(new CardDetails(), 100);
+            _devBankAuthProvider = new DevBankAuthProvider(
+                _bankAuthProvider.Object,
                 _logger.Object);
         }
 
@@ -40,10 +37,10 @@ namespace Checkout.Tests.Application.Services
         public async Task For_A_Given_Zero_Amount_A_NotAcceptable_StatusCode_From_Response_Is_Expected()
         {
             //Arange
-            _transactionAuthPayload.Amount = 0;
+            _transactionAuthRequest.Amount = 0;
 
             //Act
-            var result = await _transactionsAuthProvider.VerifyAsync(_transactionAuthPayload);
+            var result = await _devBankAuthProvider.VerifyAsync(_transactionAuthRequest);
 
             //Assert
             Assert.NotNull(result);
@@ -54,13 +51,13 @@ namespace Checkout.Tests.Application.Services
         public async Task For_A_Given_Exception_Thrown_By_Repository_A_ServiceUnavailable_StatusCode_From_Response_Is_Expected()
         {
             //Arange
-            _transactionAuthPayload.Amount = 100;
+            _transactionAuthRequest.Amount = 100;
 
-            _transactionsAuthRepository.Setup(x => x.ValidateAsync(It.IsAny<decimal>()))
+            _bankAuthProvider.Setup(x => x.ValidateAsync(It.IsAny<decimal>()))
                 .Throws(new Exception());
 
             //Act
-            var result = await _transactionsAuthProvider.VerifyAsync(_transactionAuthPayload);
+            var result = await _devBankAuthProvider.VerifyAsync(_transactionAuthRequest);
 
             //Assert
             _logger.Verify(x => x.Log(LogLevel.Error, It.IsAny<Exception>(), It.IsAny<string>()), Times.Once);
@@ -69,17 +66,17 @@ namespace Checkout.Tests.Application.Services
         }
 
         [Test]
-        public async Task For_A_Given_Null_Response_By_Repository_A_Successful_StatusCode_Is_Expected()
+        public async Task Should_Return_A_Successful_StatusCode_When_A_Null_Response_By_Repository()
         {
             //Arange
-            _transactionAuthPayload.Amount = 100;
+            _transactionAuthRequest.Amount = 100;
 
             TransactionAuth response = null;
-            _transactionsAuthRepository.Setup(x => x.ValidateAsync(It.IsAny<decimal>()))
+            _bankAuthProvider.Setup(x => x.ValidateAsync(It.IsAny<decimal>()))
                 .Returns(Task.FromResult(response));
 
             //Act
-            var result = await _transactionsAuthProvider.VerifyAsync(_transactionAuthPayload);
+            var result = await _devBankAuthProvider.VerifyAsync(_transactionAuthRequest);
 
             //Assert
             Assert.NotNull(result);
@@ -87,23 +84,22 @@ namespace Checkout.Tests.Application.Services
         }
         
         [Test]
-        public async Task For_A_Given_Not_Null_Response_By_Repository_A_Successful_StatusCode_Is_Expected()
+        public async Task Should_Return_A_Not_Successful_StatusCode_When_A_Not_Null_Null_Response_By_Repository()
         {
             //Arange
-            _transactionAuthPayload.Amount = 105;
+            _transactionAuthRequest.Amount = 105;
 
-            var transactionId = Guid.NewGuid();
-            var response = new TransactionAuth(transactionId,"05", "20005", "Declined - Do not honour");
-            _transactionsAuthRepository.Setup(x => x.ValidateAsync(It.IsAny<decimal>()))
+            var response = new TransactionAuth(Guid.NewGuid(),"05", "20005", "Declined - Do not honour");
+            _bankAuthProvider.Setup(x => x.ValidateAsync(It.IsAny<decimal>()))
                 .Returns(Task.FromResult(response));
 
             //Act
-            var result = await _transactionsAuthProvider.VerifyAsync(_transactionAuthPayload);
+            var result = await _devBankAuthProvider.VerifyAsync(_transactionAuthRequest);
 
             //Assert
             Assert.NotNull(result);
-            Assert.AreEqual(result.TransactionId, transactionId);
-            Assert.AreEqual(result.Code, response.ResponseCode);
+            Assert.AreNotEqual(result.Code, "10000");
+            Assert.AreEqual(result.Code, response.TransactionCode);
         }
     }
 }

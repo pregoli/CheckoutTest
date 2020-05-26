@@ -2,9 +2,6 @@
 using Checkout.Application.Common.Interfaces;
 using Checkout.Application.Services;
 using NUnit.Framework;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Checkout.Tests.Application.Services
 {
@@ -20,7 +17,7 @@ namespace Checkout.Tests.Application.Services
 
         [TestCase(null)]
         [TestCase("")]
-        public void For_A_Null_Or_Empty_Card_Number_The_Validation_Will_Fail(string cardNumber)
+        public void Validation_Should_Fail_For_A_Null_Or_Empty_Card_Number(string cardNumber)
         { 
             //Arrange
             var cardDetails = new CardDetails
@@ -37,7 +34,7 @@ namespace Checkout.Tests.Application.Services
         
         [TestCase("hello")]
         [TestCase("123412341234")]
-        public void For_An_Invalid_Card_Number_The_Validation_Will_Fail(string cardNumber)
+        public void Validation_Should_Fail_For_An_Invalid_Card_Number(string cardNumber)
         { 
             //Arrange
             var cardDetails = new CardDetails

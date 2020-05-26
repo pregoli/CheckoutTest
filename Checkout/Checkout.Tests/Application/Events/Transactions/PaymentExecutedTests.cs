@@ -6,8 +6,6 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -48,21 +46,20 @@ namespace Checkout.Tests.Application.Events.Transactions
         }
 
         [Test]
-        public async Task For_A_Given_Exception_Thrown_By_Service_An_Error_Will_Be_Logged()
+        public async Task Should_Log_An_Error_When_An_Exception_Throws()
         {
             //Arange
             _transactionsHistoryService.Setup(x => x.AddAsync(It.IsAny<TransactionItemDto>()))
-                .Throws(new Exception());
+                .Throws(new Exception("test"));
 
-            //Act
-            await _handler.Handle(_event, new CancellationToken());
-
-            //Assert
+            //Act + Assert
+            var ex = Assert.ThrowsAsync<Exception>(() => _handler.Handle(_event, new CancellationToken()));
+            Assert.That(ex.Message, Is.EqualTo("test"));
             _logger.Verify(x => x.Log(LogLevel.Error, It.IsAny<Exception>(), It.IsAny<string>()), Times.Once);
         }
 
         [Test]
-        public async Task For_A_Given_Response_From_The_Service_An_Exception_Will_Be_Not_Thrown()
+        public async Task Should_Not_Throw_An_Exception_When_The_Service_Return_A_Response()
         {
             //Arange
             _transactionsHistoryService.Setup(x => x.AddAsync(It.IsAny<TransactionItemDto>()))

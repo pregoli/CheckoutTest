@@ -13,7 +13,7 @@ namespace Checkout.Infrastructure
             services.AddDbContext<CheckoutDbContext>(opt =>
                opt.UseInMemoryDatabase("Checkout"));
 
-            services.AddScoped<ITransactionsAuthRepository, TransactionsAuthRepository>();
+            services.AddScoped<IDevBankAuthRepository, DevBankAuthRepository>();
             services.AddScoped<ITransactionsHistoryRepository, TransactionsHistoryRepository>();
 
             return services;

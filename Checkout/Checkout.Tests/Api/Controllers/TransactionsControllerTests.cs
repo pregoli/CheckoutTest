@@ -1,13 +1,14 @@
 ﻿using Checkout.Api.Controllers;
 using Checkout.Application.Commands.Transactions;
-using Checkout.Application.Common.Dto;
+using Checkout.Application.Common.ViewModels;
+using Checkout.Application.Queries.Transactions;
 using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using Moq;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -24,36 +25,78 @@ namespace Checkout.Tests.Api.Controllers
         public void Setup()
         {
             _mediator = new Mock<IMediator>();
-
-            _command = new ExecutePayment
-            {
-                Amount = 100,
-                CardDetails = new CardDetails(),
-                Currency = "EUR",
-                MerchantId = Guid.NewGuid()
-            };
-
             _controller = new TransactionsController(_mediator.Object);
         }
 
         [Test]
-        public async Task XXX()
+        public async Task Should_Be_Redirected_To_The_GetTransactionById_On_Completion()
         {
             //Arange
-            PaymentExecutionResponse response = new PaymentExecutionResponse(
-                        transactionId: Guid.Empty,
-                        statusCode: HttpStatusCode.ServiceUnavailable.ToString(),
-                        description: "Something went wrong",
-                        successful: false);
+            var transactionId = Guid.NewGuid();
 
             _mediator.Setup(x => x.Send(It.IsAny<ExecutePayment>(), It.IsAny<CancellationToken>()))
-                .Returns(Task.FromResult(response));
+                .Returns(Task.FromResult(transactionId));
 
             //Act
-            var result = await _controller.ExecutePayment(_command);
+            var result = await _controller.ExecutePayment(It.IsAny<ExecutePayment>());
 
             //Assert
             Assert.NotNull(result);
+            Assert.IsAssignableFrom<RedirectToRouteResult>(result);
+            Assert.AreEqual(((RedirectToRouteResult)result).RouteName, "GetTransactionById");
+            Assert.AreEqual(((RedirectToRouteResult)result).RouteValues["id"], transactionId);
+        }
+
+        [Test]
+        public async Task Should_Return_A_TransactionResponseVm()
+        {
+            //Arange
+            var transactionId = Guid.NewGuid();
+
+            _mediator.Setup(x => x.Send(It.IsAny<GetTransactionById>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(new TransactionResponseVm (
+                            transactionId: transactionId,
+                            merchantId: Guid.Empty,
+                            cardHolderName: string.Empty,
+                            cardNumber: string.Empty,
+                            amount: 0,
+                            statusCode: HttpStatusCode.ServiceUnavailable.ToString(),
+                            description: "Unfortunately It was not possible to process your request",
+                            timestamp: DateTime.MinValue)));
+
+            //Act
+            var result = await _controller.GetTransactionById(transactionId);
+
+            //Assert
+            Assert.NotNull(result.Value);
+            Assert.IsAssignableFrom<TransactionResponseVm>(result.Value);
+            Assert.AreEqual(result.Value.TransactionId, transactionId);
+        }
+
+        [Test]
+        public async Task Should_Return_A_Collection_Of_TransactionResponseVm()
+        {
+            //Arange
+            var transactionId = Guid.NewGuid();
+
+            _mediator.Setup(x => x.Send(It.IsAny<GetTransactionByMerchantId>(), It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(new List<TransactionResponseVm> {new TransactionResponseVm (
+                            transactionId: transactionId,
+                            merchantId: Guid.Empty,
+                            cardHolderName: string.Empty,
+                            cardNumber: string.Empty,
+                            amount: 0,
+                            statusCode: HttpStatusCode.ServiceUnavailable.ToString(),
+                            description: "Unfortunately It was not possible to process your request",
+                            timestamp: DateTime.MinValue) }));
+
+            //Act
+            var result = await _controller.GetTransactionByMerchantId(transactionId);
+
+            //Assert
+            Assert.NotNull(result.Value);
+            Assert.IsAssignableFrom<List<TransactionResponseVm>>(result.Value);
+            Assert.AreEqual(result.Value[0].TransactionId, transactionId);
         }
     }
 }
