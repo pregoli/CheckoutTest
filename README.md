@@ -1,4 +1,4 @@
-# CheckoutTest
+# Checkout
 >This is a test API service built on top of [.Net Core Framework](https://docs.microsoft.com/en-us/dotnet/core/) **3.1**.
 
 The implementation applies the [Mediatr](https://en.wikipedia.org/wiki/Mediator_pattern) pattern as shown below:
