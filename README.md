@@ -41,4 +41,7 @@ An example of test flow could be:
 4. After playng around with above endpoints try out and have a look at telemetries fetched by [Azure Application Insights](https://dev.applicationinsights.io/): 
     * **../api/beta/Telemetries/events/all/top/10** to check out what kind of events have bee recored.
     * **../api/beta/Telemetries/requests/count** to check out how many requests have been submitted.
+    
+## Notes
+The Transactions validation will be apllied using the response codes listed at [Checkout testing page](https://docs.checkout.com/docs/testing) via a mocked service.
 
