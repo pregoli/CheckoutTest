@@ -6,12 +6,15 @@ The implementation applies the [Mediatr](https://en.wikipedia.org/wiki/Mediator_
 
 ![Checkout Api](https://github.com/pregoli/CheckoutTest/blob/master/diagram.png)
 
-Requests validation have been decoupled by using [FluentValidation](https://fluentvalidation.net/).
+Requests validation has been decoupled by using [FluentValidation](https://fluentvalidation.net/).
 
 For test purpose, data will be stored in memory by using [Entity Framework Core InMemory](https://entityframeworkcore.com/providers-inmemory).
 
+Application telemetries recorded by using <a color="red" href="https://docs.microsoft.com/it-it/azure/azure-monitor/app/app-insights-overview" target="_blank">Microsoft.ApplicationInsight.AspNetCore</a>.
+
 
 ## Project dependencies
+
    * <a href="https://fluentvalidation.net/" target="_blank">FluentValidation.AspNetCore 8.6.2</a>
    * <a href="https://github.com/jbogard/MediatR" target="_blank">MediatR 8.0.1</a>
    * <a href="https://www.nuget.org/packages/Microsoft.EntityFrameworkCore.InMemory/3.1.4" target="_blank">Microsoft.EntityFrameworkCore.InMemory 3.1.4</a>
@@ -35,10 +38,10 @@ Each endpoint exposes its request/response schema.
 
 An example of test flow could be:
 
-1. Submit one or more Transactions via the **../api/beta/Ttransactions** endpoint.
+1. Submit one or more Transactions via the **../api/beta/transactions** endpoint.
 2. Use the merchantId from previous response to invoke the **../api/beta/merchants/{id}/transactions** and fetch all its transactions (successful and non).
 3. Use the transactionId from previous response to invoke the **../api/beta/transactions/{id}/** and fetch the transaction detail.
-4. After playng around with above endpoints try out and have a look at telemetries fetched by [Azure Application Insights](https://dev.applicationinsights.io/): 
+4. After playng around with above endpoints, youcan try out and have a look at telemetries fetched by [Azure Application Insights](https://dev.applicationinsights.io/): 
     * **../api/beta/Telemetries/events/all/top/10** to check out what kind of events have bee recored.
     * **../api/beta/Telemetries/requests/count** to check out how many requests have been submitted.
     
